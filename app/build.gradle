@@ -1,33 +1,58 @@
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
+apply plugin: 'me.tatarka.retrolambda'
 
-def AAVersion = "3.3.1"
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('gradle.properties').newDataInputStream())
+def AAVersion = properties.getProperty("AAVersion") as String
+def buildTools = properties.getProperty("BuildToolsVersion") as String
+def appName = properties.getProperty("AppName") as String
+def signFile = properties.getProperty("storeFile") as String
+def signStorePass = properties.getProperty("storePassword") as String
+def signAlias = properties.getProperty("keyAlias") as String
+def signKeyPass = properties.getProperty("keyPassword") as String
+def appId = properties.getProperty("AppId") as String
+
+System.out.print(
+        String.format("\nBUILD CONFIGURATION : \n\nAndroidAnnotations version: %s\nBuildToolsVersion : %s\nAppName: %s\nSigningFile: %s\nAppId: %s\n\nBUILD CONFIG END\n\n",
+                AAVersion, buildTools, appName, signFile, appId));
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "23.0.0 rc2"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
 
     defaultConfig {
         applicationId "pl.noiseapps.androidapptemplate"
         minSdkVersion 15
-        targetSdkVersion 22
+        targetSdkVersion 23
         versionName System.getenv("VERSION_NAME") as String ?: "dev"
         project.archivesBaseName = "AppName-" + versionName
+    }
+    signingConfigs {
+        release {
+            storeFile file(signFile)
+            storePassword signStorePass
+            keyAlias signAlias
+            keyPassword signKeyPass
+        }
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//            signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
         }
     }
-    signingConfigs {
-        release {
-            storeFile file("../siging.jks")
-            storePassword "storePass"
-            keyAlias "keyAlias"
-            keyPassword "keyPass"
-        }
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+    }
+    productFlavors {
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     lintOptions {
         abortOnError false
@@ -38,16 +63,29 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:appcompat-v7:23.1.0'
     apt "org.androidannotations:androidannotations:$AAVersion"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
     compile 'com.orhanobut:logger:1.9'
     compile 'de.greenrobot:eventbus:2.4.0'
     compile 'com.google.code.gson:gson:2.3.1'
-    compile 'com.android.support:recyclerview-v7:22.2.0'
-    compile 'com.android.support:design:22.2.0'
-    provided "org.projectlombok:lombok:1.16.4"
-    apt "org.projectlombok:lombok:1.16.4"
+    compile 'com.android.support:recyclerview-v7:23.1.0'
+    compile 'com.android.support:design:23.1.0'
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'ch.acra:acra:4.6.1'
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.squareup.okhttp:okhttp:2.5.0'
+    compile 'com.mobsandgeeks:android-saripaar:2.0.2'
+    compile 'org.apache.commons:commons-lang3:3.4'
+    compile('com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.8.0@aar') {
+        transitive = true
+    }
+    compile 'com.google.guava:guava:19.0-rc2'
+    compile 'com.jonathanfinerty.once:once:0.4.0'
+    compile 'io.reactivex:rxandroid:1.0.1'
+    compile 'io.reactivex:rxjava:1.0.14'
+    compile 'net.danlew:android.joda:2.8.1'
 }
 
 apt {
